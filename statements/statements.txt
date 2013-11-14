@@ -33,6 +33,7 @@ natural_scientist: Has a Natural Scientist with a skill of at least %s
 artist: Has a Artist with a skill of at least %s
 statesman: Has a Statesman with a skill of at least %s
 treasurer: Has a Treasurer with a skill of at least %s
+composer: Has a Composer with a skill of at least %s
 naval_reformer: Has a Naval Reformer with a skill of at least %s
 army_reformer: Has an Army Reformer with a skill of at least %s
 trader: Has a Trader with a skill of at least %s

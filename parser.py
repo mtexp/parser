@@ -177,12 +177,30 @@ def readDefinitions(name):
             lineNumber += 1
    
     return definitions
- 
+
+#Tries both cp1252 (ANSI) and UTF-8 encoding for reading files
+def findEncode(name):
+    functionOutput = ''
+
+    encodes = [ 'utf-8', 'cp1252' ]
+    for e in encodes:
+        try:
+            fh = open('%s/%s/%s' % (path, folder, name), 'r', encoding=e)
+            fh.readlines()
+            fh.seek(0)
+        except UnicodeDecodeError:
+            print('error on %s, trying another encoding' % e)
+        else:
+            print('encoding was %s' % e)
+            functionOutput = e 
+            return functionOutput
+
 #Splits the file at every bracket to ensure proper parsing
 def structureFile(name):
     functionOutput = []
+    encode = findEncode(name)
 
-    with open('%s/%s/%s' % (path, folder, name), encoding="Windows-1252") as file:
+    with open('%s/%s/%s' % (path, folder, name), encoding=encode) as file:
         for line in file:
             if "#" in line:
                 line = line.split("#")[0]
@@ -408,7 +426,7 @@ start = time.clock()
 import re #Needed for various string handling
 import os #Used to grab the list of files
 settings = readStatements("settings")
-path = settings["path"].replace("\\", "/")
+path = settings["path"].replace('\\', "")
 folder = settings["folder"]
 specificFile = settings["file"]
 if folder == "decisions":
@@ -425,7 +443,7 @@ try:
     #Dictionaries of relevant values
     provinces = readDefinitions("prov_names")
     countries = readDefinitions("countries")
-    lookup = readDefinitions("eu4")
+    lookup = readDefinitions("EU4")
     lookup.update(readDefinitions("text"))
     lookup.update(readDefinitions("opinions"))
     lookup.update(readDefinitions("powers_and_ideas"))
