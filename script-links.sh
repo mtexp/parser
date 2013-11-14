@@ -1,11 +1,13 @@
 #!/bin/bash
+GAMEPATH="/home/$USER/.steam/steam/SteamApps/common/Europa Universalis IV" 
+MODPATH="/home/$USER/dev/MEIOUandTaxes" 
 IFS=$'\n'
-FILES=`diff -qr /home/$USER/.steam/steam/SteamApps/common/Europa\ Universalis\ IV /home/calum/dev/MEIOUandTaxes | grep 'Only in /home/calum/.steam' | cut -c 73- | sed 's/: /\//g' | sed -e 's/^[ \t]*//'`
+FILES=`diff -qr "$GAMEPATH" "$MODPATH" | grep "Only in $GAMEPATH" | cut -c 73- | sed 's/: /\//g' | sed -e 's/^[ \t]*//'`
 for file in $FILES
 do
-    ln -sf "/home/$USER/.steam/steam/SteamApps/common/Europa Universalis IV/$file" "/home/calum/dev/MEIOUandTaxes/$file"
-    echo $file
+    ln -sf "$GAMEPATH/$file" "$MODPATH/$file"
+    echo "$file"
 done
 
 #to undo:
-#find /home/$USER/dev/MEIOUandTaxes -type l -exec rm {} \;
+#find "$MODPATH" -type l -exec rm {} \;
