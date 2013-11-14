@@ -59,6 +59,8 @@ def readDefinitions(name):
 
     return definitions
 
+linePattern = re.compile("(=[\s]*[\w\.]*) ([\w\.]*[\s]*=)")
+
 #Splits the file at every bracket to ensure proper parsing
 def structureFile(name):
     functionOutput = []
@@ -76,7 +78,7 @@ def structureFile(name):
                 count = line.count("=")
                 if count > 1:
                     for values in range(count):
-                        line = re.sub("(=[\s]*[\w\.]*) ([\w\.]*[\s]*=)", "\g<1>\n\g<2>", line) #Splits lines with more than one statement in two
+                        line = linePattern.sub("\g<1>\n\g<2>", line) #Splits lines with more than one statement in two
             if "\n" in line:
                 parts = line.split("\n")
                 for p in parts:
