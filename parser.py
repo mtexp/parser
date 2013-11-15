@@ -1,6 +1,6 @@
 from common import *
 
-def main(fileName):
+def main(path, folder, fileName):
     global outputText
     inputFile = structureFile(path, folder, fileName) #Transcribes game file to more parseable format
     specialSection, negative, negativeNesting, printSection, base_chance, option, random_list, randomNesting = False, False, False, False, False, False, False, False
@@ -325,6 +325,17 @@ def output(line, negative): #Outputs line to a temp variable. Written to output 
         print(line)
     outputText += line + "\n"
 
+
+modFilePattern = re.compile(r"replace_path\s*=\s*\"(.*)\"")
+def getReplacedFolders(modDirPath, modName):
+    replacedFolders = []
+    with open('%s/%s.mod' % (modDirPath, modName)) as modFile:
+        for line in modFile.readlines():
+            match = re.search(modFilePattern, line)
+            if match:
+                replacedFolders.append(match.group(1))
+    return replacedFolders
+
 if __name__ == "__main__":
     import cProfile, pstats
     pr = cProfile.Profile()
@@ -336,6 +347,9 @@ if __name__ == "__main__":
     import os #Used to grab the list of files
     settings = readStatements("settings")
     path = settings["path"].replace('\\', "")
+    modDirPath = settings["modDirPath"].replace("\\", "/")
+    modName = settings["modName"]
+    replacedFolders = getReplacedFolders(modDirPath,modName)
     folder = settings["folder"]
     specificFile = settings["file"]
     if folder == "decisions":
@@ -376,11 +390,15 @@ if __name__ == "__main__":
 
         if specificFile == "no":
             for fileName in os.listdir("%s/%s" % (path, folder)):
-                print("Parsing file %s" % fileName)
-                main(fileName)
+                if not folder in replacedFolders:
+                    print("Parsing file %s/%s/%s" % (path, folder, fileName))
+                    main(path, folder, fileName)
+            for fileName in os.listdir("%s/%s/%s" % (modDirPath, modName, folder)):
+                print("Parsing file %s/%s/%s/%s" % (modDirPath, modName, folder, fileName))
+                main("%s/%s" % (modDirPath, modName), folder, fileName)
         else:
             fileName = specificFile+".txt"
-            main(fileName)
+            main(path, folder, fileName)
     except FileNotFoundError:
         print("File not found error: Make sure you've set the file path in settings.txt")
     elapsed = time.clock() - start

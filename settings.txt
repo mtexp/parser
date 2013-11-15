@@ -1,8 +1,14 @@
 Path to your EU4 folder. Backward or forward slashes are both accepted
-	path: E:\Steam\SteamApps\common\Europa Universalis IV
+	path: C:/Program Files (x86)/Steam/SteamApps/common/Europa Universalis IV
+
+Path to the mod dir you want to use. Backward or forward slashes are both accepted
+    modDirPath: C:/Users/Myzael/Documents/Paradox Interactive/Europa Universalis IV/mod
+
+Name of the mod you want to use.
+    modName: MEIOUandTaxes
 
 Folder you want to parse. Decisions, missions, and events are accepted
 	folder: events
 
 File you want to parse. "no" in order to parse all files in folder. No .txt extension
-	file: AmericanRevolution
+	file: no

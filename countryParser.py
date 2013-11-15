@@ -60,6 +60,7 @@ if __name__ == "__main__":
     import os #Used to grab the list of files
     settings = readStatements("settings")
     path = settings["path"].replace("\\", "/")
+    modPath = settings["mod"].replace("\\", "/")
 
     #Dictionaries of known statements
     countryStatements = readStatements("statements/countryStatements")
