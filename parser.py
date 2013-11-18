@@ -340,6 +340,9 @@ def getReplacedFolders(modDirPath, modName):
                 replacedFolders.append(match.group(1))
     return replacedFolders
 
+def getFilesToSkip(files):
+    return [s.strip() + ".txt" for s in files.split(";")]
+
 if __name__ == "__main__":
     import cProfile, pstats
     pr = cProfile.Profile()
@@ -354,6 +357,7 @@ if __name__ == "__main__":
     modDirPath = settings["modDirPath"].replace("\\", "/")
     modName = settings["modName"]
     replacedFolders = getReplacedFolders(modDirPath,modName)
+    filesToSkip = getFilesToSkip(settings["filesToSkip"])
     folder = settings["folder"]
     specificFile = settings["file"]
     if folder == "decisions":
@@ -394,12 +398,13 @@ if __name__ == "__main__":
 
         if specificFile == "no":
             for fileName in os.listdir("%s/%s" % (path, folder)):
-                if not folder in replacedFolders:
+                if not folder in replacedFolders and not fileName in filesToSkip:
                     print("Parsing file %s/%s/%s" % (path, folder, fileName))
                     main(path, folder, fileName)
             for fileName in os.listdir("%s/%s/%s" % (modDirPath, modName, folder)):
-                print("Parsing file %s/%s/%s/%s" % (modDirPath, modName, folder, fileName))
-                main("%s/%s" % (modDirPath, modName), folder, fileName)
+                if not fileName in filesToSkip:
+                    print("Parsing file %s/%s/%s/%s" % (modDirPath, modName, folder, fileName))
+                    main("%s/%s" % (modDirPath, modName), folder, fileName)
         else:
             fileName = specificFile+".txt"
             main(path, folder, fileName)
