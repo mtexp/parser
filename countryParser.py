@@ -2,11 +2,11 @@ from common import *
 
 def main(fileName):
     global outputDict
-    inputFile = structureFile(path, "history/countries/", fileName) #Transcribes game file to more parseable format
+    inputFile = structureFile(fileName, path, "history/countries/") #Transcribes game file to more parseable format
     outputDict = {}
     for line in inputFile:
         #Determines how deeply nested the current line is
-        nesting, nestingIncrement = nestingCheck(line, nesting, nestingIncrement)
+        nestingCheck(line, nesting)
         if nesting > 0:
             continue
         command, value = getValues(line)
@@ -55,20 +55,20 @@ if __name__ == "__main__":
     pr = cProfile.Profile()
     pr.enable()
 
+    from common import *
     import time #Used for timing the parser
     start = time.clock()
     import os #Used to grab the list of files
     settings = readStatements("settings")
     path = settings["path"].replace("\\", "/")
-    modPath = settings["mod"].replace("\\", "/")
 
     #Dictionaries of known statements
     countryStatements = readStatements("statements/countryStatements")
     countryCommands = countryStatements["commands"].split()
     nesting, nestingIncrement = 0, 0
-    finalOutput = ""
+    finalOutput = []
     #ideas = {}
-    #unformattedIdeas = structureFile(path, "common/ideas", "00_country_ideas.txt")
+    #unformattedIdeas = structureFile("common/ideas/00_country_ideas.txt")
     #triggerFound = False
     #for line in unformattedIdeas:
     #    nestingCheck(line)
@@ -85,26 +85,26 @@ if __name__ == "__main__":
 
     try:
         #Dictionaries of relevant values
-        provinces = readDefinitions(path, "prov_names")
-        countries = readDefinitions(path, "countries")
-        countries.update(readDefinitions(path, "text"))
-        countries.update(readDefinitions(path, "eu4"))
-        lookup = readDefinitions(path, "eu4")
-        lookup.update(readDefinitions(path, "text"))
-        lookup.update(readDefinitions(path, "opinions"))
-        lookup.update(readDefinitions(path, "powers_and_ideas"))
-        lookup.update(readDefinitions(path, "decisions"))
-        lookup.update(readDefinitions(path, "modifers"))
-        lookup.update(readDefinitions(path, "muslim_dlc"))
-        lookup.update(readDefinitions(path, "Purple_Phoenix"))
-        lookup.update(readDefinitions(path, "core"))
-        lookup.update(readDefinitions(path, "missions"))
-        lookup.update(readDefinitions(path, "diplomacy"))
+        provinces = readDefinitions("prov_names", path)
+        countries = readDefinitions("countries", path)
+        countries.update(readDefinitions("text", path))
+        countries.update(readDefinitions("EU4", path))
+        lookup = readDefinitions("EU4", path)
+        lookup.update(readDefinitions("text", path))
+        lookup.update(readDefinitions("opinions", path))
+        lookup.update(readDefinitions("powers_and_ideas", path))
+        lookup.update(readDefinitions("decisions", path))
+        lookup.update(readDefinitions("modifers", path))
+        lookup.update(readDefinitions("muslim_dlc", path))
+        lookup.update(readDefinitions("Purple_Phoenix", path))
+        lookup.update(readDefinitions("core", path))
+        lookup.update(readDefinitions("missions", path))
+        lookup.update(readDefinitions("diplomacy", path))
         for fileName in os.listdir("%s/history/countries" % path):
             print("Parsing file %s" % fileName)
-            finalOutput += main(fileName)
+            finalOutput.append(main(fileName))
         with open("output/countryOutput.txt", "w", encoding="utf-8") as outputFile:
-            outputFile.write(finalOutput)
+            outputFile.write("".join(finalOutput))
     except FileNotFoundError:
         print("File not found error: Make sure you've set the file path in settings.txt")
     elapsed = time.clock() - start
