@@ -326,6 +326,8 @@ def output(line, negative): #Outputs line to a temp variable. Written to output 
 modFilePattern = re.compile(r"replace_path\s*=\s*\"(.*)\"")
 def getReplacedFolders(modDirPath, modName):
     replacedFolders = []
+    if not (modDirPath and modName):
+        return replacedFolders
     with open('%s/%s.mod' % (modDirPath, modName)) as modFile:
         for line in modFile.readlines():
             match = re.search(modFilePattern, line)
@@ -392,13 +394,14 @@ if __name__ == "__main__":
 
         if specificFile == "no":
             for fileName in os.listdir("%s/%s" % (path, folder)):
-                if not folder in replacedFolders and not fileName in filesToSkip:
+                if fileName not in filesToSkip and folder not in replacedFolders:
                     print("Parsing file %s/%s/%s" % (path, folder, fileName))
                     main(path, folder, fileName)
-            for fileName in os.listdir("%s/%s/%s" % (modDirPath, modName, folder)):
-                if not fileName in filesToSkip:
-                    print("Parsing file %s/%s/%s/%s" % (modDirPath, modName, folder, fileName))
-                    main("%s/%s" % (modDirPath, modName), folder, fileName)
+            if modDirPath and modName:
+                for fileName in os.listdir("%s/%s/%s" % (modDirPath, modName, folder)):
+                    if fileName not in filesToSkip:
+                        print("Parsing file %s/%s/%s/%s" % (modDirPath, modName, folder, fileName))
+                        main("%s/%s" % (modDirPath, modName), folder, fileName)
         else:
             fileName = specificFile+".txt"
             main(path, folder, fileName)
