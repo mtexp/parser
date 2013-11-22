@@ -11,7 +11,7 @@ Folder you want to parse. "decisions", "missions", and "events" are accepted.
 	folder: missions
 
 File you want to skip. Leave "filesToSkip:" if you want to parse all the files. No .txt extension. Separate names by ";"
-	filesToSkip: CNC - Events;M - Colonial_Missions
+	filesToSkip: CNC - Events
 
 File you want to parse. "no" in order to parse all files in folder. No .txt extension
 	file: no

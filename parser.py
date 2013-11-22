@@ -16,7 +16,7 @@ def main(path, folder, fileName):
                     name = statementLookup(line, lookup, getValues(line)[0]+"_title", 0) #Finds just the name identifier
                     output(name, 2)
             elif "title" in line:
-                name = statementLookup(line, events, getValues(line)[1], 0) #Finds just the title identifier
+                name = statementLookup(line, lookup, getValues(line)[1], 0) #Finds just the title identifier
                 output(name, 2)
                 if specialSection == "province_event":
                     output("Province event", -1)
@@ -172,6 +172,8 @@ def formatLine(command, value, negative, random_list):
             value = str(round(100*float(value), 1)).rstrip("0").rstrip(".")
     except KeyError:
         pass
+    except ValueError:
+        pass
 
     #Local negation
     if value == "no":
@@ -228,22 +230,20 @@ def formatLine(command, value, negative, random_list):
 
     line = statementLookup(line, statements, command, value)
     return line, negative
- 
+
+# [myzael] this method does not fulfill the contract temporarily, because of merging of events and lookup dicts.
+# But it does not matter for now, as the only time the second element of the returned tuple is checked, it is neither
+# "other" nor "events". Should that ever no longer be the case, the dicts and this method must be changed accordingly.
 def valueLookup(value, command):
     if value == "":
         return value, "other"
 
     #Assign province
     if '"%s"' % command in exceptions["provinceCommands"]: #List of statements that check provinces
-        try:
+        if "PROV"+value in provinces:
             return provinces["PROV"+value], "province"
-        except KeyError:
-            try:
-                int(value)
-                print("Could not look up province with value %s" % value)
-            except ValueError:
-                pass
-
+        # else:
+        #     print("Could not look up province with value %s" % value)
     #Root
     if value.lower() == "root":
         return "our country", "country"
@@ -252,30 +252,25 @@ def valueLookup(value, command):
 
     #Assign country. 3 capitalized letters in a row is a country tag
     if len(value) == 3 and re.match("[A-Z]{3}", value):
-        try:
+        if value in countries:
             return countries[value], "country"
-        except KeyError:
-            try:
-                return lookup[value], "country"
-            except KeyError:
-                print("Could not look up country with value %s" % value)
+        elif value in lookup:
+            return lookup[value], "country"
+        else:
+            print("Could not look up country with value %s" % value)
 
     if value != "" and re.match("[a-zA-Z]", value): #Try to match a value with text to localisation
-        #if value in lookup:
-        try:
-            return lookup[value], "other"
-        except KeyError:
-            try:
-                return lookup["building_"+value], "other"
-            except KeyError:
-                try:
-                    return lookup[value+"_title"], "other"
-                except KeyError:
-                    if folder == "events":
-                        try:
-                            return events[value], "event"
-                        except KeyError:
-                            return value, "other"
+        if value in lookup:
+            if folder == "events":
+                return lookup[value], "event"
+            else:
+                return lookup[value], "other"
+        elif "building_"+value in lookup:
+            return lookup["building_"+value], "other"
+        elif value+"_title" in lookup:
+            return lookup[value+"_title"], "other"
+        else:
+            return value, "other"
     return value, "other"
  
 #Lookup of human-readable string
@@ -292,7 +287,7 @@ def statementLookup(line, check, command, value):
 def getModifier(modifier):
     modifierFound = False
     #Rare enough that going line by line is efficient enough
-    for line in modifiers:
+    for line in eventModifiers:
         if not modifierFound:
             if modifier in line:
                 modifierFound = True
@@ -314,14 +309,14 @@ def output(line, negative): #Outputs line to a temp variable. Written to output 
     global outputText
     indent = "*"*(nesting-nestingIncrement-negative-2)
     if indent != "":
-        line = "%s %s" % (indent, line)
+        line = "%s %s\n" % (indent, line)
     elif negative == 2:
-        line = "\n=== %s ===" %line
+        line = "=== %s ===\n" %line
     else:
-        line = "\n'''%s'''\n" %line
+        line = "'''%s'''\n" %line
     if specificFile != "no":
         print(line)
-    outputText.append(line + "\n")
+    outputText.append(line)
 
 modFilePattern = re.compile(r"replace_path\s*=\s*\"(.*)\"")
 def getReplacedFolders(modDirPath, modName):
@@ -337,6 +332,7 @@ def getReplacedFolders(modDirPath, modName):
 
 def getFilesToSkip(files):
     return [s.strip() + ".txt" for s in files.split(";")]
+
 
 if __name__ == "__main__":
     import cProfile, pstats
@@ -366,47 +362,66 @@ if __name__ == "__main__":
     statements = readStatements("statements/statements")
     exceptions = readStatements("statements/exceptions")
 
+    def getModPath():
+        return "%s/%s" % (modDirPath, modName)
+
+    def useMod():
+        return modDirPath and modName
+
+    def getPath():
+        if modName and modDirPath:
+            return getModPath()
+        else:
+            return path
+
+    def notProvNameOrCountry(name):
+        return not name.startswith("prov_names") and not name.startswith("countries")
+
+    def isEnglishLocalization(name):
+        return name.endswith("_l_english.yml")
+
+    def acceptName(name):
+        return notProvNameOrCountry(name) and isEnglishLocalization(name)
+
+
     try:
         #Dictionaries of relevant values
-        provinces = readDefinitions("prov_names", path)
-        countries = readDefinitions("countries", path)
-        lookup = readDefinitions("eu4", path)
-        lookup.update(readDefinitions("text", path))
-        lookup.update(readDefinitions("opinions", path))
-        lookup.update(readDefinitions("powers_and_ideas", path))
-        lookup.update(readDefinitions("decisions", path))
-        lookup.update(readDefinitions("modifers", path))
-        lookup.update(readDefinitions("muslim_dlc", path))
-        lookup.update(readDefinitions("Purple_Phoenix", path))
-        lookup.update(readDefinitions("core", path))
-        lookup.update(readDefinitions("missions", path))
-        lookup.update(readDefinitions("diplomacy", path))
-        lookup.update(readDefinitions("flavor_events", path))
-        lookup.update(readDefinitions("USA_dlc", path))
-        events = readDefinitions("generic_events", path)
-        events.update(readDefinitions("flavor_events", path))
-        events.update(readDefinitions("EU4", path))
-        events.update(readDefinitions("muslim_dlc", path))
-        events.update(readDefinitions("Purple_Phoenix", path))
-        events.update(readDefinitions("USA_dlc", path))
-        with open(path+"/common/event_modifiers/00_event_modifiers.txt") as f:
-            modifiers = f.readlines()
+        provinces = readDefinitions("%s/localisation/prov_names_l_english.yml" % getPath())
+        countries = readDefinitions("%s/localisation/countries_l_english.yml" % getPath())
+
+        lookup = {}
+        for fileName in [f for f in os.listdir("%s/localisation" % path) if acceptName(f)]:
+            lookup.update(readDefinitions("%s/localisation/%s" % (path,fileName)))
+        if useMod():
+            for fileName in [f for f in os.listdir("%s/localisation" % getModPath()) if acceptName(f)]:
+                lookup.update(readDefinitions("%s/localisation/%s" % (getModPath(),fileName)))
+
+
+        eventModifiers = []
+        for fileName in os.listdir("%s/common/event_modifiers" % path):
+            with open("%s/common/event_modifiers/%s" % (path,fileName)) as f:
+                eventModifiers.append(f.readlines())
+        if useMod():
+            for fileName in os.listdir("%s/common/event_modifiers" % getModPath()):
+                with open("%s/common/event_modifiers/%s" % (getModPath(),fileName)) as f:
+                    eventModifiers.append(f.readlines())
+
 
         if specificFile == "no":
             for fileName in os.listdir("%s/%s" % (path, folder)):
                 if fileName not in filesToSkip and folder not in replacedFolders:
                     print("Parsing file %s/%s/%s" % (path, folder, fileName))
                     main(path, folder, fileName)
-            if modDirPath and modName:
-                for fileName in os.listdir("%s/%s/%s" % (modDirPath, modName, folder)):
+            if useMod():
+                for fileName in os.listdir("%s/%s" % (getModPath(), folder)):
                     if fileName not in filesToSkip:
-                        print("Parsing file %s/%s/%s/%s" % (modDirPath, modName, folder, fileName))
-                        main("%s/%s" % (modDirPath, modName), folder, fileName)
+                        print("Parsing file %s/%s/%s" % (getModPath(), folder, fileName))
+                        main(getModPath(), folder, fileName)
         else:
             fileName = specificFile+".txt"
-            main(path, folder, fileName)
-    except FileNotFoundError:
-        print("File not found error: Make sure you've set the file path in settings.txt")
+            main(getPath(), folder, fileName)
+    except FileNotFoundError as ex:
+        print("File not found %s: Make sure you've set the file path in settings.txt" % ex.args)
     elapsed = time.clock() - start
     print("Parsing the files took %.3f seconds" %elapsed)
     pr.disable()

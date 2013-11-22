@@ -11,9 +11,9 @@ def readStatements(localisationName):
     return localisation
 
 #Reads in a definition file as a dictionary
-def readDefinitions(name, path):
+def readDefinitions(path):
     definitions = {}
-    with open(path+"/localisation/%s_l_english.yml" % name, encoding="utf-8") as definitionsFile:
+    with open(path, encoding="utf-8") as definitionsFile:
         lines = definitionsFile.readlines()
         lineNumber = 1
         for line in lines[1:]:
