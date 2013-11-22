@@ -168,11 +168,17 @@ def formatLine(command, value, negative, random_list):
         if command == "}" or command == "{":
             return "", negative
     try:
+        # [myzael] adding special exception for coloanial range. Dirty, but works and I have no creativity atm.
+        if(command == "range"):
+            try:
+                float(value)
+                command += "_modifier"
+            except ValueError:
+                command += "_trigger"
+
         if "%%" in statements[command]: #Percentage values should be multiplied
             value = str(round(100*float(value), 1)).rstrip("0").rstrip(".")
     except KeyError:
-        pass
-    except ValueError:
         pass
 
     #Local negation
@@ -243,7 +249,7 @@ def valueLookup(value, command):
         if "PROV"+value in provinces:
             return provinces["PROV"+value], "province"
         # else:
-        #     print("Could not look up province with value %s" % value)
+        #     print("Could not look up province with value: %s for command: %s" % (value,command))
     #Root
     if value.lower() == "root":
         return "our country", "country"

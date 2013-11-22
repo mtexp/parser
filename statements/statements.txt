@@ -389,7 +389,8 @@ global_trade_power: %s%% trade power
 global_own_trade_power: %s%% domestic trade power
 global_foreign_trade_power: %s%% trade power abroad
 trade_steering: %s%% trade steering
-range: %s%% colonial range
+range_modifier: %s%% colonial range bonus
+range_trigger: Is in colonial range of %s
 trade_range: %s%% trade range
 trade_range_modifier: %s%% trade range
 inflation_reduction: Reduces inflation by %s per year
