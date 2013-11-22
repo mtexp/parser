@@ -406,11 +406,19 @@ if __name__ == "__main__":
         eventModifiers = []
         for fileName in os.listdir("%s/common/event_modifiers" % path):
             with open("%s/common/event_modifiers/%s" % (path,fileName)) as f:
-                eventModifiers.append(f.readlines())
+                for line in f.readlines():
+                    if "#" in line:
+                        line = line.split("#")[0]
+                    if not re.match(r"\s+", line) and line != "":
+                        eventModifiers.append(line)
         if useMod():
             for fileName in os.listdir("%s/common/event_modifiers" % getModPath()):
                 with open("%s/common/event_modifiers/%s" % (getModPath(),fileName)) as f:
-                    eventModifiers.append(f.readlines())
+                    for line in f.readlines():
+                        if "#" in line:
+                            line = line.split("#")[0]
+                        if not re.match(r"\s+", line) and line != "":
+                            eventModifiers.append(line)
 
 
         if specificFile == "no":
