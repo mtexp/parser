@@ -111,6 +111,11 @@ def main(path, folder, fileName):
                     value1 =str(round(100*float(value1), 1)).rstrip("0").rstrip(".")
             elif '"%s"' % command in exceptions["value2"]:
                 value2 = valueLookup(value, specialType)[0]
+                if command == "which":
+                    match = re.match(r"\s*which\s*=\s*([\w\"]*)\s*value\s*=\s*(\d+)\s*",line)
+                    if match:
+                        value2 = match.group(1)
+                        value1 = match.group(2)
                 if command == "duration":
                     if value2 == "-1":
                         value2 = "the rest of the campaign"
