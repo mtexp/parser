@@ -8,10 +8,10 @@ Name of the mod you want to use. Leave "modName:" if you want to use vanilla.
     modName: MEIOUandTaxes
 
 Folder you want to parse. "decisions", "missions", and "events" are accepted.
-	folder: missions
+	folder: events
 
 File you want to skip. Leave "filesToSkip:" if you want to parse all the files. No .txt extension. Separate names by ";"
-	filesToSkip: CNC - Events
+	filesToSkip: CNC - Events;Always_War
 
 File you want to parse. "no" in order to parse all files in folder. No .txt extension
 	file: no

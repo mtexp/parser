@@ -325,8 +325,6 @@ def output(line, negative): #Outputs line to a temp variable. Written to output 
         line = "=== %s ===\n" %line
     else:
         line = "'''%s'''\n" %line
-    if specificFile != "no":
-        print(line)
     outputText.append(line)
 
 modFilePattern = re.compile(r"replace_path\s*=\s*\"(.*)\"")
